@@ -7,6 +7,7 @@ class TestServer < MiniTest::Unit::TestCase
     # this runs every time before test_*
     @cmd = cmd('bwkfanboy') # get path to the exe & cd to tests directory
 
+    ENV['BWKFANBOY_CONF'] = ''
     rm_rf 'example/01'
     @s = Server.new Home.new('example/01')
     @s.mylog.level = Logger::DEBUG
