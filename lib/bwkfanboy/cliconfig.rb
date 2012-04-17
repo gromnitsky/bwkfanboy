@@ -84,7 +84,7 @@ module Bwkfanboy
     # Parse CLO and env variable. If block is given it is passed with
     # OptionParser object as a parameter.
     def optParse
-      o = OptionParser.new do |o|
+      OptionParser.new do |o|
         o.banner = @conf[:banner]
         o.banner = @conf[:banner]
         o.on('-v', 'Be more verbose.') { |i|
@@ -126,7 +126,7 @@ module Bwkfanboy
     # [reqOpts] an array of requied options
     # [&block]  a optional block for OptionParser
     def load(reqOpts = [], &block)
-      optParse &block
+      optParse(&block)
       loadFile
       requiredOptions?(reqOpts)
     end
