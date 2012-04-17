@@ -1,0 +1,26 @@
+#!/usr/bin/env ruby
+# -*-ruby-*-
+
+require_relative '../lib/bwkfanboy/cliconfig'
+
+include Bwkfanboy
+
+$conf = CliConfig.new
+$conf[:banner] = "Usage: #{File.basename($0)} [options] hren'"
+$conf[:foobar] = ''
+
+### main
+
+$conf.load(['foobar']) {|o|
+  o.on('--foobar STR', 'An example of the option --foobar') {|i|
+    $conf[:foobar] = i
+  }
+}
+
+# print our env
+if $conf[:verbose] >= 2
+  puts "Libs dir: #{CliUtils::DIR_LIB_SRC}"
+  pp $conf
+end
+
+puts 'Hello, World!'
