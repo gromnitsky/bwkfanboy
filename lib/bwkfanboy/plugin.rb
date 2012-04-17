@@ -6,7 +6,7 @@ module Bwkfanboy
   module BH
     extend self
 
-    # FIXME: clean unsafe html for 'text/html' content-type
+    # FIXME: clean unsafe html for 'html' content_type
     def clean t
       t.gsub(/\s+/, ' ').strip
     end
@@ -17,6 +17,22 @@ module Bwkfanboy
       DateTime.parse(BH.clean(t)).iso8601
     rescue
       DateTime.now.iso8601
+    end
+
+    def all_set? t
+      return false unless t
+      
+      if t.is_a?(Array)
+        return false if t.size == 0
+        
+        t.each {|i|
+          return false unless i
+          return false if i.to_s.strip.size == 0
+        }
+      end
+
+      return false if t.to_s.strip.size == 0
+      true
     end
     
   end
@@ -91,6 +107,13 @@ module Bwkfanboy
       rescue Exception
         fail "plugin: '#{@name}' failed to parse: #{$!}"
       end
+
+      fail 'plugin: uri must be an array of strings' unless BH.all_set?(uri)
+      fail 'plugin: enc is unset' unless BH.all_set?(enc)
+      fail 'plugin: version must be an integer' unless BH.all_set?(version)
+      fail 'plugin: copyright is unset' unless BH.all_set?(copyright)
+      fail 'plugin: title is unset' unless BH.all_set?(title)
+      fail 'plugin: content_type is unset' unless BH.all_set?(content_type)
     end
 
     # Runs loaded plugin's parser

@@ -12,6 +12,17 @@ class TestPlugin < MiniTest::Unit::TestCase
     @h = Home.new('example/02')
   end
 
+  def test_allset
+    assert_equal false, BH.all_set?([])
+    assert_equal false, BH.all_set?(nil)
+    assert_equal false, BH.all_set?('')
+    assert_equal false, BH.all_set?('    ')
+    assert_equal false, BH.all_set?([1,2, ''])
+    assert_equal false, BH.all_set?([1,2, nil])
+    assert_equal true, BH.all_set?(1)
+    assert_equal true, BH.all_set?('1')
+  end
+  
   def test_load_ok
     stream = [StringIO.new(File.read(@h.root + Home::PLUGINS + 'bwk.html'))]
     p1 = Plugin.new @h.conf[:plugins_path], 'bwk'
@@ -62,9 +73,10 @@ class TestPlugin < MiniTest::Unit::TestCase
 
   def test_broken_plugins
     streams = [StringIO.new(File.read(@h.root + Home::PLUGINS + 'bwk.html'))]
-    p = Plugin.new @h.conf[:plugins_path], 'empty'
-    e = assert_raises(RuntimeError) { p.run_parser streams }
-    assert_match /failed to parse/, e.message
+    e = assert_raises(RuntimeError) {
+      Plugin.new @h.conf[:plugins_path], 'empty'
+    }
+    assert_match /uri must be an array of strings/, e.message
 
     e = assert_raises(RuntimeError) {
       p = Plugin.new @h.conf[:plugins_path], 'garbage'

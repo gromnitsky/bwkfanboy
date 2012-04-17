@@ -1,9 +1,9 @@
 require 'nokogiri'
 
-uri << 'http://www.dailyprincetonian.com/advanced_search/?author=Brian+Kernighan'
-copyright = "See bwkfanboy's LICENSE file"
-title = "Brian Kernighan's articles from Daily Princetonian"
-content_type = 'html'
+@uri << 'http://www.dailyprincetonian.com/advanced_search/?author=Brian+Kernighan'
+@copyright = "See bwkfanboy's LICENSE file"
+@title = "Brian Kernighan's articles from Daily Princetonian"
+@content_type = 'html'
 
 # [stream]  an array of IO streams
 def parse stream
