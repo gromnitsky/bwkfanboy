@@ -1,3 +1,5 @@
+require 'msgpack'
+
 require_relative 'home'
 
 module Bwkfanboy
@@ -19,6 +21,7 @@ module Bwkfanboy
       DateTime.now.iso8601
     end
 
+    # See test_plugin.rb
     def all_set? t
       return false unless t
       
@@ -41,6 +44,8 @@ module Bwkfanboy
   end
   
   # Requires defined 'parse(stream)' method in plugin.
+  #
+  # Raises only PluginException on purpose.
   class Plugin
     include Enumerable
 
@@ -49,6 +54,7 @@ module Bwkfanboy
     # [path]    an array
     # [name]    plugin's name (without .rb extension)
     # [opt]     a hash
+    # [&block]  you can examine the Plugin object there
     def initialize path, name, opt, &block
       @path = path
       @stream = stream
@@ -71,7 +77,7 @@ module Bwkfanboy
     attr_accessor :stream, :origin
     attr_accessor :uri, :enc, :version, :copyright, :title, :content_type
 
-    def each(&b)
+    def each &b
       @data.each &b
     end
 
@@ -92,6 +98,17 @@ module Bwkfanboy
 
     def size
       @data.size
+    end
+
+    def pack stream = ''
+      # hopefully, urf8 will survive
+      MessagePack.pack({
+                         'version' => @version,
+                         'copyright' => @copyright,
+                         'title' => @title,
+                         'content_type' => @content_type,
+                         'data' => @data
+                       }, stream)
     end
 
     def load
@@ -122,6 +139,8 @@ module Bwkfanboy
       raise PluginException, 'plugin: title is unset' unless BH.all_set?(title)
       raise PluginException, 'plugin: content_type is unset' unless BH.all_set?(content_type)
 
+      # use this, for example, to print a message to user that loading
+      # was fine
       yield self if block_given?
     end
 

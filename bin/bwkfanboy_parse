@@ -23,8 +23,8 @@ rescue PluginException
 end
 
 # print output
-if CliUtils.debug
+if home.conf[:verbose] >= 1
   pp p
 else
-  pp p
+  p.pack $stdout
 end
