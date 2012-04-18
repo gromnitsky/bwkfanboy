@@ -1,0 +1,55 @@
+=Name
+
+bwkfanboy_parse--[TODO: write a summary here.]
+
+
+==Synopsis
+
+ bwkfanboy_parse [options]
+
+
+==Description
+
+The bwkfanboy_parse utility [TODO: write a description here.]
+
+The options are as follows:
+
+--config-dirs::             List all possible locations for the
+                            configuration file. The first found wins.
+
+--config NAME::             The name of the configuration file. If
+                            it contains <tt>/</tt> in it, the list from
+                            <tt>--config-dirs</tt> is ignored.
+
+-V, --version::             Show version and exit.
+
+-v::                        Be more verbose. You can supply it several
+                            times, viz. <tt>-vv</tt> dumps even more
+                            debug info.
+
+--foobar NAME::             Huh?
+
+==Configuration
+
+bwkfanboy_parse looks for its configuration at 3 places at start up.
+
+1. At <tt>BWKFANBOY_CONF</tt> env variable.
+   (Its format is exactly similar to CL options.)
+
+2. At the configuration file. Its default name is
+   <tt>bwkfanboy.yaml</tt> and it can be stored in several
+   system directories which are observable by <tt>--config--dirs</tt> CL
+   option.
+
+3. At command line.
+
+Higher number levels overrides the values from lower number levels.
+
+The configuration file must be in YAML format. Look into <tt>`gem env
+gemdir`/gems/bwkfanboy-x.y.z/etc/</tt> directory for samples.
+
+
+==Examples
+
+ % bwkfanboy_parse --config-dirs
+ % bwkfanboy_parse -V

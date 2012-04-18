@@ -1,0 +1,30 @@
+#!/usr/bin/env ruby
+
+require_relative '../lib/bwkfanboy/plugin'
+include Bwkfanboy
+
+### main
+
+home = Home.new {|loader, o|
+  loader.conf[:banner] = "#{File.basename $0} [options] plugin"
+}
+
+CliUtils.errx EX_USAGE, home.conf[:banner] unless BH.all_set?(ARGV[0])
+
+# load plugin
+stream = [$stdin]
+begin
+  p = Plugin.new home.conf[:plugins_path], ARGV[0], {} do |loader|
+    CliUtils.veputs 2, "'#{ARGV[0]}' plugin loaded from #{loader.origin}"
+  end
+  p.run_parser stream
+rescue PluginException
+  CliUtils.errx EX_DATAERR, $!.to_s
+end
+
+# print output
+if CliUtils.debug
+  pp p
+else
+  pp p
+end
