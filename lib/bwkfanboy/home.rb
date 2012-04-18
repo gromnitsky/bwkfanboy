@@ -6,7 +6,7 @@ require_relative 'cliconfig'
 module Bwkfanboy
   class Home
     # Home root directory
-    ROOT = Pathname.new "~/.#{Meta::NAME.downcase}"
+    ROOT = Pathname.new "#{Dir.home}/.#{Meta::NAME.downcase}"
     PLUGINS = 'plugins'
     LOGS = 'log'
 

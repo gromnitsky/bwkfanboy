@@ -14,22 +14,22 @@ module Bwkfanboy
     end
 
     # [data]  a hash; see Plugin#pack for the exact format.
-    def atom src
+    def atom data
       feed = RSS::Maker.make("atom") { |maker|
-        maker.channel.id = src['channel']['id']
-        maker.channel.updated = src['channel']['updated']
-        maker.channel.author = src['channel']['author']
-        maker.channel.title = src['channel']['title']
+        maker.channel.id = data['channel']['id']
+        maker.channel.updated = data['channel']['updated']
+        maker.channel.author = data['channel']['author']
+        maker.channel.title = data['channel']['title']
         
         maker.channel.links.new_link {|i|
-          i.href = src['channel']['link']
+          i.href = data['channel']['link']
           i.rel = 'alternate'
           i.type = 'text/html' # eh
         }
         
         maker.items.do_sort = true
 
-        src['x_entries'].each { |i|
+        data['x_entries'].each { |i|
           maker.items.new_item do |item|
             item.links.new_link {|k|
               k.href = i['link']
@@ -39,7 +39,7 @@ module Bwkfanboy
             item.title = i['title']
             item.author = i['author']
             item.updated = i['updated']
-            item.content.type = src['channel']['x_entries_content_type']
+            item.content.type = data['channel']['x_entries_content_type']
       
             case item.content.type
             when 'text'

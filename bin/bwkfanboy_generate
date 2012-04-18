@@ -1,11 +1,8 @@
 #!/usr/bin/env ruby
 
-require_relative '../lib/bwkfanboy/home'
 require_relative '../lib/bwkfanboy/generator'
 include Bwkfanboy
 
 ### main
 
-home = Home.new
-
-puts 'Hello, World!'
+puts Generator.atom(Generator.unpack $stdin)
