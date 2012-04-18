@@ -1,26 +1,43 @@
 #!/usr/bin/env ruby
-# -*-ruby-*-
 
-require_relative '../lib/bwkfanboy/cliconfig'
-
+require_relative '../lib/bwkfanboy/plugin'
+require_relative '../lib/bwkfanboy/generator'
 include Bwkfanboy
-
-$conf = CliConfig.new
-$conf[:banner] = "Usage: #{File.basename($0)} [options] hren'"
-$conf[:foobar] = ''
 
 ### main
 
-$conf.load(['foobar']) {|o|
-  o.on('--foobar STR', 'An example of the option --foobar') {|i|
-    $conf[:foobar] = i
+mode = nil
+$home = Home.new {|loader, o|
+  loader.conf[:banner] = "#{File.basename $0} [options] plugin"
+  
+  o.on('-l', 'List all plugins.') { 
+    mode = :list
   }
+  o.on('-i', 'Show some info about the plugin.') {
+    mode = :info
+  }
+  o.on('-t FILE', 'Write to the FILE a skeleton for a plugin.') {|i|
+    
+  }
+  
 }
 
-# print our env
-if $conf[:verbose] >= 2
-  puts "Libs dir: #{CliUtils::DIR_LIB_SRC}"
-  pp $conf
+if !mode
+  CliUtils.errx EX_USAGE, $home.conf[:banner] unless BH.all_set?(ARGV[0])
 end
 
-puts 'Hello, World!'
+case mode
+when :list
+  PluginInfo.list $home.conf[:plugins_path]
+  
+when :info
+  begin
+    PluginInfo.about $home.conf[:plugins_path], ARGV[0], ARGV[1..-1]
+  rescue  PluginException
+    CliUtils.errx EX_DATAERR, $!.to_s
+  end
+
+else
+
+
+end

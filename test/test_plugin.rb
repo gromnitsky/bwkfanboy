@@ -25,7 +25,7 @@ class TestPlugin < MiniTest::Unit::TestCase
 
   def test_entryMostRecent
     stream = [StringIO.new(File.read(@h.root + Home::PLUGINS + 'bwk.html'))]
-    p = Plugin.new @h.conf[:plugins_path], 'bwk', {}
+    p = Plugin.new @h.conf[:plugins_path], 'bwk', []
     p.run_parser stream
 
 #    p.each {|i| puts i[:updated]}
@@ -37,7 +37,7 @@ class TestPlugin < MiniTest::Unit::TestCase
   
   def test_load_ok
     stream = [StringIO.new(File.read(@h.root + Home::PLUGINS + 'bwk.html'))]
-    p1 = Plugin.new @h.conf[:plugins_path], 'bwk', {}
+    p1 = Plugin.new @h.conf[:plugins_path], 'bwk', []
     assert(p1)
     p1.run_parser stream
 
@@ -52,29 +52,29 @@ class TestPlugin < MiniTest::Unit::TestCase
   end
 
   def test_load_failed
-    e = assert_raises(PluginException) { Plugin.new nil, 'BOGUS PLUGIN', {} }
+    e = assert_raises(PluginException) { Plugin.new nil, 'BOGUS PLUGIN', [] }
     assert_match /invalid search path/, e.message
 
     
     e = assert_raises(PluginException) {
-      Plugin.new @h.conf[:plugins_path], 'BOGUS PLUGIN', {}
+      Plugin.new @h.conf[:plugins_path], 'BOGUS PLUGIN', []
     }
     assert_match /not found/, e.message
 
     e = assert_raises(PluginException) {
-      p = Plugin.new @h.conf[:plugins_path], 'bwk', {}
+      p = Plugin.new @h.conf[:plugins_path], 'bwk', []
       p.run_parser nil
     }
     assert_match /parser expects a valid array of IO objects/, e.message
 
     stream = [StringIO.new("")]
-    p = Plugin.new @h.conf[:plugins_path], 'bwk', {}
+    p = Plugin.new @h.conf[:plugins_path], 'bwk', []
     assert(p)
     e = assert_raises(PluginException) { p.run_parser stream }
     assert_match /it ain\'t grab anything/, e.message
 
     stream = [StringIO.new("fffffuuuuuuu")]
-    p = Plugin.new @h.conf[:plugins_path], 'bwk', {}
+    p = Plugin.new @h.conf[:plugins_path], 'bwk', []
     assert(p)
     e = assert_raises(PluginException) { p.run_parser stream }
     assert_match /it ain\'t grab anything/, e.message
@@ -83,13 +83,31 @@ class TestPlugin < MiniTest::Unit::TestCase
   def test_broken_plugins
     streams = [StringIO.new(File.read(@h.root + Home::PLUGINS + 'bwk.html'))]
     e = assert_raises(PluginException) {
-      Plugin.new @h.conf[:plugins_path], 'empty', {}
+      Plugin.new @h.conf[:plugins_path], 'empty', []
     }
     assert_match /uri must be an array of strings/, e.message
 
     e = assert_raises(PluginException) {
-      p = Plugin.new @h.conf[:plugins_path], 'garbage', {}
+      p = Plugin.new @h.conf[:plugins_path], 'garbage', []
     }
     assert_match /failed to parse/, e.message
+  end
+
+  def test_PluginInfo_about
+    e = assert_raises(PluginException) { PluginInfo.about nil, nil, nil }
+    assert_match /invalid search path/, e.message
+
+    e = assert_raises(PluginException) {
+      PluginInfo.about @h.conf[:plugins_path], nil, nil
+    }
+    assert_match /'' not found/, e.message
+
+    out, err = capture_io {
+      PluginInfo.about @h.conf[:plugins_path], 'bwk', nil
+    }
+    out.split("\n")[0..3].each {|i|
+      assert_match /^[A-Z]+ *: .+/, i
+    }
+    
   end
 end

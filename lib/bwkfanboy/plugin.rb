@@ -53,7 +53,7 @@ module Bwkfanboy
 
     # [path]    an array
     # [name]    plugin's name (without .rb extension)
-    # [opt]     a hash
+    # [opt]     an array
     # [&block]  you can examine the Plugin object there
     def initialize path, name, opt, &block
       @path = path
@@ -62,7 +62,7 @@ module Bwkfanboy
       @origin = nil # a path where plugin was found
 
       # Variables for plugin authours
-      @opt = opt
+      @opt = opt || []
       @uri = []
       @enc = 'UTF-8'
       @version = 1
@@ -179,5 +179,26 @@ module Bwkfanboy
       raise PluginException, "plugin: it ain't grab anything" if @data.size == 0
     end
 
+  end
+
+  module PluginInfo
+    extend self
+    
+    def about path, name, opt
+      p = Plugin.new path, name, opt
+      [:version, :copyright, :title].each {|idx|
+        puts "%-9s : %s" % [idx.to_s.upcase, p.send(idx)]
+      }
+      puts "URI       : #{p.uri.size}\n\n"
+      p.uri.each {|idx| puts idx }
+    end
+
+    def list path
+      path.each {|idx|
+        puts "#{idx}:"
+        Dir.glob("#{idx}/*.rb").each {|file| puts "\t"+File.basename(file, '.rb') }
+      }
+    end
+    
   end
 end
