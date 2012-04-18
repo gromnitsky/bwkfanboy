@@ -37,6 +37,9 @@ module Bwkfanboy
     
   end
 
+  class PluginException < Exception
+  end
+  
   # Requires defined 'parse(stream)' method in plugin.
   class Plugin
     include Enumerable
@@ -46,10 +49,11 @@ module Bwkfanboy
     # [path]    an array
     # [name]    plugin's name (without .rb extension)
     # [opt]     a hash
-    def initialize path, name, opt = {}
+    def initialize path, name, opt, &block
       @path = path
       @stream = stream
       @name = name
+      @origin = nil # a path where plugin was found
 
       # Variables for plugin authours
       @opt = opt
@@ -61,10 +65,10 @@ module Bwkfanboy
       @content_type = ''
 
       @data = []
-      load
+      load &block
     end
 
-    attr_accessor :stream
+    attr_accessor :stream, :origin
     attr_accessor :uri, :enc, :version, :copyright, :title, :content_type
 
     def each(&b)
@@ -76,7 +80,7 @@ module Bwkfanboy
       
       [:title, :link, :updated, :author, :content].each {|idx|
         obj[idx] &&= BH.clean obj[idx]
-        fail "plugin: empty '#{idx}' in the entry #{obj.inspect}" if obj[idx].size == 0
+        raise PluginException, "plugin: empty '#{idx}' in the entry #{obj.inspect}" if obj[idx].size == 0
       }
       
       @data << obj
@@ -91,46 +95,53 @@ module Bwkfanboy
     end
 
     def load
-      fail 'plugin: invalid search path' unless @path && @path.respond_to?(:each)
+      raise PluginException, 'plugin: invalid search path' unless @path && @path.respond_to?(:each)
       
       p = nil
       @path.each {|idx|
         contents = Dir.glob "#{idx}/*.rb"
         pos = contents.index "#{idx}/#{@name}.rb"
-        break if pos && p = contents[pos]
+        if pos && p = contents[pos]
+          @origin = idx
+          break
+        end
       }
 
-      fail "plugin: '#{@name}' not found" unless p
+      raise PluginException, "plugin: '#{@name}' not found" unless p
       
       begin
         instance_eval File.read(p)
       rescue Exception
-        fail "plugin: '#{@name}' failed to parse: #{$!}"
+        raise PluginException, "plugin: '#{@name}' failed to parse: #{$!}"
       end
 
-      fail 'plugin: uri must be an array of strings' unless BH.all_set?(uri)
-      fail 'plugin: enc is unset' unless BH.all_set?(enc)
-      fail 'plugin: version must be an integer' unless BH.all_set?(version)
-      fail 'plugin: copyright is unset' unless BH.all_set?(copyright)
-      fail 'plugin: title is unset' unless BH.all_set?(title)
-      fail 'plugin: content_type is unset' unless BH.all_set?(content_type)
+      raise PluginException, 'plugin: uri must be an array of strings' unless BH.all_set?(uri)
+      raise PluginException, 'plugin: enc is unset' unless BH.all_set?(enc)
+      raise PluginException, 'plugin: version must be an integer' unless BH.all_set?(version)
+      raise PluginException, 'plugin: copyright is unset' unless BH.all_set?(copyright)
+      raise PluginException, 'plugin: title is unset' unless BH.all_set?(title)
+      raise PluginException, 'plugin: content_type is unset' unless BH.all_set?(content_type)
+
+      yield self if block_given?
     end
 
     # Runs loaded plugin's parser
     def run_parser streams
       ok = streams ? true : false
       streams.each {|i| ok = false unless i.respond_to?(:eof) } if streams
-      fail 'plugin: parser expects a valid array of IO objects' unless ok
+      raise PluginException, 'plugin: parser expects a valid array of IO objects' unless ok
 
       begin
         parse streams
       rescue Exception
-        fail "plugin: '#{@name}' failed to parse: #{$!}"
+        raise PluginException, "plugin: '#{@name}' failed to parse: #{$!}"
       end
+
+      check
     end
       
     def check
-      fail "plugin: it ain't grab anything" if @data.size == 0
+      raise PluginException, "plugin: it ain't grab anything" if @data.size == 0
     end
 
   end

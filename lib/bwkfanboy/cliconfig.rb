@@ -85,14 +85,12 @@ module Bwkfanboy
     # OptionParser object as a parameter.
     def optParse
       OptionParser.new do |o|
-        o.banner = @conf[:banner]
-        o.banner = @conf[:banner]
         o.on('-v', 'Be more verbose.') { |i|
           self[:verbose] += 1
         }
         o.on('-V', '--version', 'Show version & exit.') { |i|
           puts Meta::VERSION
-          exit 0
+          exit EX_OK
         }
         o.on('--config NAME',
              "Set a config name or file",
@@ -110,10 +108,11 @@ module Bwkfanboy
               puts "  #{f}"
             end
           }
-          exit 0
+          exit EX_OK
         }
 
         yield o if block_given?
+        o.banner = @conf[:banner]
 
         env = nil
         env = ENV[@conf[:config_env]].shellsplit if ENV.key?(@conf[:config_env])

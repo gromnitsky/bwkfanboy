@@ -25,10 +25,9 @@ class TestPlugin < MiniTest::Unit::TestCase
   
   def test_load_ok
     stream = [StringIO.new(File.read(@h.root + Home::PLUGINS + 'bwk.html'))]
-    p1 = Plugin.new @h.conf[:plugins_path], 'bwk'
+    p1 = Plugin.new @h.conf[:plugins_path], 'bwk', {}
     assert(p1)
     p1.run_parser stream
-    p1.check
 
     assert_match /^http:\/\/\S+/, p1[2][:link]
     assert DateTime.parse(p1[2][:updated])
@@ -41,45 +40,43 @@ class TestPlugin < MiniTest::Unit::TestCase
   end
 
   def test_load_failed
-    e = assert_raises(RuntimeError) { Plugin.new nil, 'BOGUS PLUGIN' }
+    e = assert_raises(PluginException) { Plugin.new nil, 'BOGUS PLUGIN', {} }
     assert_match /invalid search path/, e.message
 
     
-    e = assert_raises(RuntimeError) {
-      Plugin.new @h.conf[:plugins_path], 'BOGUS PLUGIN'
+    e = assert_raises(PluginException) {
+      Plugin.new @h.conf[:plugins_path], 'BOGUS PLUGIN', {}
     }
     assert_match /not found/, e.message
 
-    e = assert_raises(RuntimeError) {
-      p = Plugin.new @h.conf[:plugins_path], 'bwk'
+    e = assert_raises(PluginException) {
+      p = Plugin.new @h.conf[:plugins_path], 'bwk', {}
       p.run_parser nil
     }
     assert_match /parser expects a valid array of IO objects/, e.message
 
     stream = [StringIO.new("")]
-    p = Plugin.new @h.conf[:plugins_path], 'bwk'
+    p = Plugin.new @h.conf[:plugins_path], 'bwk', {}
     assert(p)
-    p.run_parser stream
-    e = assert_raises(RuntimeError) { p.check }
+    e = assert_raises(PluginException) { p.run_parser stream }
     assert_match /it ain\'t grab anything/, e.message
 
     stream = [StringIO.new("fffffuuuuuuu")]
-    p = Plugin.new @h.conf[:plugins_path], 'bwk'
+    p = Plugin.new @h.conf[:plugins_path], 'bwk', {}
     assert(p)
-    p.run_parser stream
-    e = assert_raises(RuntimeError) { p.check }
+    e = assert_raises(PluginException) { p.run_parser stream }
     assert_match /it ain\'t grab anything/, e.message
   end
 
   def test_broken_plugins
     streams = [StringIO.new(File.read(@h.root + Home::PLUGINS + 'bwk.html'))]
-    e = assert_raises(RuntimeError) {
-      Plugin.new @h.conf[:plugins_path], 'empty'
+    e = assert_raises(PluginException) {
+      Plugin.new @h.conf[:plugins_path], 'empty', {}
     }
     assert_match /uri must be an array of strings/, e.message
 
-    e = assert_raises(RuntimeError) {
-      p = Plugin.new @h.conf[:plugins_path], 'garbage'
+    e = assert_raises(PluginException) {
+      p = Plugin.new @h.conf[:plugins_path], 'garbage', {}
     }
     assert_match /failed to parse/, e.message
   end
