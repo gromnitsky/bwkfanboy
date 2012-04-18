@@ -22,6 +22,18 @@ class TestPlugin < MiniTest::Unit::TestCase
     assert_equal true, BH.all_set?(1)
     assert_equal true, BH.all_set?('1')
   end
+
+  def test_entryMostRecent
+    stream = [StringIO.new(File.read(@h.root + Home::PLUGINS + 'bwk.html'))]
+    p = Plugin.new @h.conf[:plugins_path], 'bwk', {}
+    p.run_parser stream
+
+#    p.each {|i| puts i[:updated]}
+    assert_equal '2012-03-12T00:00:00+00:00', p.entryMostRecent
+
+    p[rand(0..3)][:updated] = '2042-03-12T00:00:00+00:00'
+    assert_equal '2042-03-12T00:00:00+00:00', p.entryMostRecent
+  end
   
   def test_load_ok
     stream = [StringIO.new(File.read(@h.root + Home::PLUGINS + 'bwk.html'))]

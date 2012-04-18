@@ -103,14 +103,30 @@ module Bwkfanboy
     def pack stream = ''
       # hopefully, urf8 will survive
       MessagePack.pack({
-                         'version' => @version,
-                         'copyright' => @copyright,
-                         'title' => @title,
-                         'content_type' => @content_type,
-                         'data' => @data
+                         'channel' => {
+                           'updated' => entryMostRecent,
+                           'id' => @uri.to_s,
+                           'author' => @copyright,
+                           'title' => @title,
+                           'link' => @uri.first,
+                           'x_entries_content_type' => @content_type,
+                         },
+                         'x_entries' => @data
                        }, stream)
     end
 
+    def entryMostRecent
+      return nil if @data.size == 0
+      
+      max = DateTime.parse @data.sample[:updated]
+      @data.each {|idx|
+        cur = DateTime.parse idx[:updated]
+        max = cur if max < cur
+      }
+
+      return max.iso8601
+    end
+    
     def load
       raise PluginException, 'plugin: invalid search path' unless @path && @path.respond_to?(:each)
       

@@ -29,7 +29,7 @@ class TestCLI < MiniTest::Unit::TestCase
 
     raw = MessagePack.unpack r[2]
     assert raw
-    assert_equal raw['title'], "Brian Kernighan's articles from Daily Princetonian"
-    assert_operator 4, :<=, raw['data'].size
+    assert_equal raw['channel']['title'], "Brian Kernighan's articles from Daily Princetonian"
+    assert_operator 4, :<=, raw['x_entries'].size
   end
 end

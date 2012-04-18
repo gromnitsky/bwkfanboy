@@ -6,7 +6,7 @@ include Bwkfanboy
 ### main
 
 home = Home.new {|loader, o|
-  loader.conf[:banner] = "#{File.basename $0} [options] plugin"
+  loader.conf[:banner] = "#{File.basename $0} [options] plugin < html"
 }
 
 CliUtils.errx EX_USAGE, home.conf[:banner] unless BH.all_set?(ARGV[0])
