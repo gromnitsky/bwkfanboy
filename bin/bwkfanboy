@@ -1,9 +1,7 @@
 #!/usr/bin/env ruby
 
 require_relative '../lib/bwkfanboy/home'
-require_relative '../lib/bwkfanboy/fetch'
-require_relative '../lib/bwkfanboy/plugin'
-require_relative '../lib/bwkfanboy/generator'
+require_relative '../lib/bwkfanboy/utils'
 include Bwkfanboy
 
 ### main
@@ -11,17 +9,19 @@ include Bwkfanboy
 mode = nil
 $home = Home.new {|loader, o|
   loader.conf[:banner] = "#{File.basename $0} [options] plugin [opt1 opt2 ...]"
-  
-  o.on('-l', 'List all plugins.') { 
+
+  o.on('-l', 'List all plugins.') {
     mode = :list
   }
   o.on('-i', 'Show some info about the plugin.') {
     mode = :info
   }
-  o.on('-t FILE', 'Write to the FILE a skeleton for a plugin.') {|i|
-    
+  o.on('-s FILE', 'Write to the FILE a skeleton for a plugin.') {|i|
+    mode = :template
+    loader.conf[:skeleton] = i
+    loader.conf[:template] = (CliUtils::DIR_LIB_SRC + 'plugin_skeleton.erb').to_s
   }
-  
+
 }
 
 if !mode
@@ -31,7 +31,7 @@ end
 case mode
 when :list
   PluginInfo.list $home.conf[:plugins_path]
-  
+
 when :info
   begin
     PluginInfo.about $home.conf[:plugins_path], ARGV[0], ARGV[1..-1]
@@ -39,19 +39,14 @@ when :info
     CliUtils.errx EX_DATAERR, $!.to_s
   end
 
+when :template
+  exit EX_CANTCREAT unless Utils.skeletonCreate $home.conf[:template], "#{$home.conf[:skeleton]}.rb"
+
 else
   begin
-    p = Plugin.new $home.conf[:plugins_path], ARGV[0], ARGV[1..-1]
-    streams = Fetch.openStreams p.uri
-    p.run_parser(streams)
-    
-    
-#    raw = StringIO.new p.pack
-#    puts Generator.atom(Generator.unpack raw)
-    puts Generator.atom p.export
-    
-    Fetch.closeStreams streams
+    Utils.atom $home.conf[:plugins_path], ARGV[0], ARGV[1..-1]
   rescue FetchException, PluginException, GeneratorException
     CliUtils.errx EX_DATAERR, $!.to_s
   end
+
 end

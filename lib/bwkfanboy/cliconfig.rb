@@ -65,10 +65,10 @@ module Bwkfanboy
       return false unless file
 
       CliUtils::veputs(2, "Loading #{File.basename(file)}... " + CliUtils::NNL_MARK)
-      myconf = YAML.load_file(file) rescue CliUtils.errx(1, "cannot parse config #{file}: #{$!}")
+      myconf = YAML.load_file(file) rescue CliUtils.errx(EX_CONFIG, "cannot parse config #{file}: #{$!}")
       # preserve existing values
       @conf.merge!(myconf) {|key, oldval, newval| oldval }
-      CliUtils::veputs(2, "OK")
+      CliUtils::veputs 2, "OK"
       return true
     end
 
@@ -76,7 +76,7 @@ module Bwkfanboy
     def requiredOptions?(opts)
       opts.each {|idx|
         if !@conf.key?(idx.to_sym) || !@conf[idx.to_sym]
-          CliUtils.errx(1, "option #{idx} is either nil or missing")
+          CliUtils.errx EX_CONFIG, "option #{idx} is either nil or missing"
         end
       }
     end
@@ -116,7 +116,12 @@ module Bwkfanboy
 
         env = nil
         env = ENV[@conf[:config_env]].shellsplit if ENV.key?(@conf[:config_env])
-        [env, ARGV].each { |i| o.parse!(i) if i }
+
+        begin
+          [env, ARGV].each { |i| o.parse!(i) if i }
+        rescue
+          CliUtils.errx EX_USAGE, $!.to_s
+        end
       end
     end
 

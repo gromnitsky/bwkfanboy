@@ -1,4 +1,8 @@
 require 'msgpack'
+require 'fakefs/safe'
+require 'digest/md5'
+
+require_relative '../lib/bwkfanboy/utils'
 require_relative 'helper'
 
 class TestCLI < MiniTest::Unit::TestCase
@@ -56,4 +60,27 @@ class TestCLI < MiniTest::Unit::TestCase
     r = CliUtils.exec "#{@cmd} test foo bar"
     assert_equal EX_OK, r[0]
   end
+
+  def test_skeleton
+    skel = File.read '../lib/bwkfanboy/plugin_skeleton.erb'
+    FakeFS do
+      File.open('skel.erb', 'w+') {|fp| fp.write skel }
+      
+      Utils.skeletonCreate 'skel.erb', '1'
+      m1 = Digest::MD5.file('1').hexdigest
+      Utils.skeletonCreate 'skel.erb', '1'
+      m2 = Digest::MD5.file('1').hexdigest
+      assert_equal m1, m2
+
+      File.open('1', 'w+') {|fp| fp.write 'fffffuuuu' }
+      m3 = Digest::MD5.file('1').hexdigest
+      out, err = capture_io { Utils.skeletonCreate 'skel.erb', '1' }
+      assert_match /1 already exists/, err
+      m4 = Digest::MD5.file('1').hexdigest
+      assert_equal m3, m4
+
+      refute_equal m1, m4      
+    end
+  end
+  
 end

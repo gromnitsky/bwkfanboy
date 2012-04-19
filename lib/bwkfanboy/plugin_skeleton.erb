@@ -1,0 +1,26 @@
+# This is a skeleton for a <%= Meta::NAME %> <%= Meta::VERSION %> plugin.  To understand how
+# plugins work please read doc/plugins.rdoc file from <%= Meta::NAME %>'s
+# distribution.
+
+@uri = 'http://example.org/news'
+@enc = 'UTF-8'
+@version = 1
+@copyright = '(c) <%= DateTime.now.year %> <%= Etc.getpwuid(Process.euid)[:gecos] %>'
+@title = "News from example.org"
+@content_type = 'html'
+  
+def parse streams
+  streams.each do |io|
+    doc = Nokogiri::HTML io, nil, @enc
+    doc.xpath("XPATH QUERY").each {|idx|
+      t = idx.xpath("XPATH QUERY").text
+      l = idx.xpath("XPATH QUERY").text
+      u = BH.date idx.xpath("XPATH QUERY").text
+      a = idx.xpath("XPATH QUERY").text
+      c = idx.xpath("XPATH QUERY").text
+      
+      self << { 'title' => t, 'link' => l, 'updated' => u,
+        'author' => a, 'content' => c }
+    }
+  end
+end
