@@ -1,8 +1,9 @@
 #!/usr/bin/env ruby
 
+require_relative '../lib/bwkfanboy/home'
+require_relative '../lib/bwkfanboy/fetch'
 require_relative '../lib/bwkfanboy/plugin'
 require_relative '../lib/bwkfanboy/generator'
-require_relative '../lib/bwkfanboy/fetch'
 include Bwkfanboy
 
 ### main
@@ -44,9 +45,9 @@ else
     streams = Fetch.openStreams p.uri
     p.run_parser(streams)
     
-    raw = StringIO.new p.pack
-    puts Generator.atom(Generator.unpack raw)
-#    puts Generator.atom p.export
+#    raw = StringIO.new p.pack
+#    puts Generator.atom(Generator.unpack raw)
+    puts Generator.atom p.export
     
     Fetch.closeStreams streams
   rescue FetchException, PluginException, GeneratorException

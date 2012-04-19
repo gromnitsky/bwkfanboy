@@ -1,6 +1,5 @@
 require 'msgpack'
-
-require_relative 'home'
+require 'nokogiri'
 
 module Bwkfanboy
 
@@ -10,7 +9,7 @@ module Bwkfanboy
 
     # FIXME: clean unsafe html for 'html' content_type
     def clean t
-      return unless t
+      return '' unless t
       t.gsub(/\s+/, ' ').strip
     end
 
@@ -44,7 +43,7 @@ module Bwkfanboy
   class PluginException < Exception
   end
   
-  # Requires defined 'parse(stream)' method in plugin.
+  # Requires defined 'parse(streams)' method in plugin.
   #
   # Raises only PluginException on purpose.
   class Plugin
@@ -58,7 +57,6 @@ module Bwkfanboy
     # [&block]  you can examine the Plugin object there
     def initialize path, name, opt, &block
       @path = path
-      @stream = stream
       @name = name
       @origin = nil # a path where plugin was found
 
@@ -75,7 +73,7 @@ module Bwkfanboy
       load &block
     end
 
-    attr_accessor :stream, :origin
+    attr_accessor :origin
     attr_accessor :uri, :enc, :version, :copyright, :title, :content_type
 
     def each &b
@@ -85,7 +83,7 @@ module Bwkfanboy
     def << obj
       return @data if @data.size >= MAX_ENTRIES
       
-      [:title, :link, :updated, :author, :content].each {|idx|
+      ['title', 'link', 'updated', 'author', 'content'].each {|idx|
         obj[idx] &&= BH.clean obj[idx]
         raise PluginException, "plugin: empty '#{idx}' in the entry #{obj.inspect}" if obj[idx].size == 0
       }
@@ -119,13 +117,14 @@ module Bwkfanboy
         'x_entries' => @data
       }
     end
-    
+
+    # We can do this while adding a new entry, not here
     def entryMostRecent
       return nil if @data.size == 0
       
-      max = DateTime.parse @data.sample[:updated]
+      max = DateTime.parse @data.sample['updated']
       @data.each {|idx|
-        cur = DateTime.parse idx[:updated]
+        cur = DateTime.parse idx['updated']
         max = cur if max < cur
       }
 
@@ -191,8 +190,8 @@ module Bwkfanboy
     
     def about path, name, opt
       p = Plugin.new path, name, opt
-      [:version, :copyright, :title].each {|idx|
-        puts "%-9s : %s" % [idx.to_s.upcase, p.send(idx)]
+      ['version', 'copyright', 'title'].each {|idx|
+        puts "%-9s : %s" % [idx.upcase, p.send(idx)]
       }
       puts "URI       : #{p.uri.size}\n\n"
       p.uri.each {|idx| puts idx }

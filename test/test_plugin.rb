@@ -1,6 +1,7 @@
 require 'stringio'
 
 require_relative 'helper'
+require_relative '../lib/bwkfanboy/home'
 require_relative '../lib/bwkfanboy/plugin'
 
 class TestPlugin < MiniTest::Unit::TestCase
@@ -31,7 +32,7 @@ class TestPlugin < MiniTest::Unit::TestCase
 #    p.each {|i| puts i[:updated]}
     assert_equal '2012-03-12T00:00:00+00:00', p.entryMostRecent
 
-    p[rand(0..3)][:updated] = '2042-03-12T00:00:00+00:00'
+    p[rand(0..3)]['updated'] = '2042-03-12T00:00:00+00:00'
     assert_equal '2042-03-12T00:00:00+00:00', p.entryMostRecent
   end
   
@@ -41,10 +42,10 @@ class TestPlugin < MiniTest::Unit::TestCase
     assert(p1)
     p1.run_parser stream
 
-    assert_match /^http:\/\/\S+/, p1[2][:link]
-    assert DateTime.parse(p1[2][:updated])
+    assert_match /^http:\/\/\S+/, p1[2]['link']
+    assert DateTime.parse(p1[2]['updated'])
     
-    [:title, :author, :content].each {|i|
+    ['title', 'author', 'content'].each {|i|
       assert_operator 0, :<, p1[2][i].size
     }
     
