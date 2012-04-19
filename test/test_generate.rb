@@ -31,6 +31,14 @@ class TestGenerate < MiniTest::Unit::TestCase
                  doc.xpath('//feed/title').text)
   end
 
+  def test_atom_fail
+    e = assert_raises(GeneratorException) { Generator.atom nil }
+    assert_match /input is nil/, e.message
+
+    e = assert_raises(GeneratorException) { Generator.atom [1,2] }
+    assert_match /can\'t convert String into Integer/, e.message
+  end
+
   def test_unpack
     refute Generator.unpack(nil)
 

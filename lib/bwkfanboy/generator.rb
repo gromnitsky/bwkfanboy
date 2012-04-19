@@ -2,6 +2,10 @@ require 'rss/maker'
 require 'msgpack'
 
 module Bwkfanboy
+
+  class GeneratorException < Exception
+  end
+  
   module Generator
     extend self
 
@@ -15,6 +19,8 @@ module Bwkfanboy
 
     # [data]  a hash; see Plugin#pack for the exact format.
     def atom data
+      raise GeneratorException, 'generator: input is nil' unless data
+      
       feed = RSS::Maker.make("atom") { |maker|
         maker.channel.id = data['channel']['id']
         maker.channel.updated = data['channel']['updated']
@@ -53,7 +59,9 @@ module Bwkfanboy
         }
       }
 
-      return feed      
+      feed
+    rescue
+      raise GeneratorException, "generator: #{$!}"
     end
     
   end

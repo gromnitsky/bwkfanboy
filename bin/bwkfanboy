@@ -2,6 +2,7 @@
 
 require_relative '../lib/bwkfanboy/plugin'
 require_relative '../lib/bwkfanboy/generator'
+require_relative '../lib/bwkfanboy/fetch'
 include Bwkfanboy
 
 ### main
@@ -38,6 +39,17 @@ when :info
   end
 
 else
-
-
+  begin
+    p = Plugin.new $home.conf[:plugins_path], ARGV[0], ARGV[1..-1]
+    streams = Fetch.openStreams p.uri
+    p.run_parser(streams)
+    
+    raw = StringIO.new p.pack
+    puts Generator.atom(Generator.unpack raw)
+#    puts Generator.atom p.export
+    
+    Fetch.closeStreams streams
+  rescue FetchException, PluginException, GeneratorException
+    CliUtils.errx EX_DATAERR, $!.to_s
+  end
 end

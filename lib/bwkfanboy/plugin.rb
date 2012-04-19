@@ -10,6 +10,7 @@ module Bwkfanboy
 
     # FIXME: clean unsafe html for 'html' content_type
     def clean t
+      return unless t
       t.gsub(/\s+/, ' ').strip
     end
 
@@ -102,19 +103,23 @@ module Bwkfanboy
 
     def pack stream = ''
       # hopefully, urf8 will survive
-      MessagePack.pack({
-                         'channel' => {
-                           'updated' => entryMostRecent,
-                           'id' => @uri.to_s,
-                           'author' => @copyright,
-                           'title' => @title,
-                           'link' => @uri.first,
-                           'x_entries_content_type' => @content_type,
-                         },
-                         'x_entries' => @data
-                       }, stream)
+      MessagePack.pack export, stream
     end
 
+    def export
+      {
+        'channel' => {
+          'updated' => entryMostRecent,
+          'id' => @uri.to_s,
+          'author' => @copyright,
+          'title' => @title,
+          'link' => @uri.first,
+          'x_entries_content_type' => @content_type,
+        },
+        'x_entries' => @data
+      }
+    end
+    
     def entryMostRecent
       return nil if @data.size == 0
       
