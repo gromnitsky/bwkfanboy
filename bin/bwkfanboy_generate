@@ -1,8 +1,13 @@
 #!/usr/bin/env ruby
 
+require_relative '../lib/bwkfanboy/cliutils'
 require_relative '../lib/bwkfanboy/generator'
 include Bwkfanboy
 
 ### main
 
-puts Generator.atom(Generator.unpack $stdin)
+begin
+  puts Generator.atom(Generator.unpack $stdin)
+rescue GeneratorException
+  CliUtils.errx EX_DATAERR, $!.to_s
+end

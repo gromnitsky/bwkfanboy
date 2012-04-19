@@ -59,6 +59,7 @@ module Bwkfanboy
       @path = path
       @name = name
       @origin = nil # a path where plugin was found
+      @syslib = File.dirname __FILE__
 
       # Variables for plugin authours
       @opt = (opt && opt.map(&:to_s)) || []

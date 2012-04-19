@@ -19,7 +19,7 @@ module Bwkfanboy
 
     # [data]  a hash; see Plugin#pack for the exact format.
     def atom data
-      raise GeneratorException, 'generator: input is nil' unless data
+      raise GeneratorException, 'generator: unpacked input is nil' unless data
       
       feed = RSS::Maker.make("atom") { |maker|
         maker.channel.id = data['channel']['id']

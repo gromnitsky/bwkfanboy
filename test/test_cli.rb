@@ -7,6 +7,7 @@ class TestCLI < MiniTest::Unit::TestCase
     @cmd = cmd('bwkfanboy') # get path to the exe & cd to tests directory
     
     @bwkfanboy_parse = File.dirname(@cmd) + '/bwkfanboy_parse'
+    @bwkfanboy_generate = File.dirname(@cmd) + '/bwkfanboy_generate'
   end
 
   def test_bwkfanboy_parse_fail
@@ -31,5 +32,28 @@ class TestCLI < MiniTest::Unit::TestCase
     assert raw
     assert_equal raw['channel']['title'], "Brian Kernighan's articles from Daily Princetonian"
     assert_operator 4, :<=, raw['x_entries'].size
+  end
+
+  def test_bwkfanboy_generate_fail
+    r = CliUtils.exec "echo '' | #{@bwkfanboy_generate}"
+    assert_equal EX_DATAERR, r[0]
+  end
+
+  def test_bwkfanboy_fail
+    r = CliUtils.exec "#{@cmd}"
+    assert_equal EX_USAGE, r[0]
+
+    r = CliUtils.exec "#{@cmd} BOGUS-PLUGIN"
+    assert_equal EX_DATAERR, r[0]
+    assert_match /not found/, r[1]
+
+    r = CliUtils.exec "#{@cmd} test"
+    assert_equal EX_DATAERR, r[0]
+    assert_match /forget about additional options/, r[1]
+  end
+
+  def test_bwkfanboy
+    r = CliUtils.exec "#{@cmd} test foo bar"
+    assert_equal EX_OK, r[0]
   end
 end
