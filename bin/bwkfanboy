@@ -10,7 +10,7 @@ include Bwkfanboy
 
 mode = nil
 $home = Home.new {|loader, o|
-  loader.conf[:banner] = "#{File.basename $0} [options] plugin"
+  loader.conf[:banner] = "#{File.basename $0} [options] plugin [opt1 opt2 ...]"
   
   o.on('-l', 'List all plugins.') { 
     mode = :list
@@ -44,6 +44,7 @@ else
     p = Plugin.new $home.conf[:plugins_path], ARGV[0], ARGV[1..-1]
     streams = Fetch.openStreams p.uri
     p.run_parser(streams)
+    
     
 #    raw = StringIO.new p.pack
 #    puts Generator.atom(Generator.unpack raw)

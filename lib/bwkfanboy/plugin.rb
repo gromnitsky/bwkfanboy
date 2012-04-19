@@ -61,7 +61,7 @@ module Bwkfanboy
       @origin = nil # a path where plugin was found
 
       # Variables for plugin authours
-      @opt = opt || []
+      @opt = (opt && opt.map(&:to_s)) || []
       @uri = []
       @enc = 'UTF-8'
       @version = 1
@@ -152,7 +152,10 @@ module Bwkfanboy
         raise PluginException, "plugin: '#{@name}' failed to parse: #{$!}"
       end
 
-      raise PluginException, 'plugin: uri must be an array of strings' unless BH.all_set?(uri)
+      unless BH.all_set?(uri)
+        raise PluginException, 'plugin: uri must be an array of strings' if @opt.size != 0
+        raise PluginException, 'plugin: don\'t we forget about additional options?'
+      end
       raise PluginException, 'plugin: enc is unset' unless BH.all_set?(enc)
       raise PluginException, 'plugin: version must be an integer' unless BH.all_set?(version)
       raise PluginException, 'plugin: copyright is unset' unless BH.all_set?(copyright)

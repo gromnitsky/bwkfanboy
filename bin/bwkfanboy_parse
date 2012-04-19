@@ -7,7 +7,7 @@ include Bwkfanboy
 ### main
 
 home = Home.new {|loader, o|
-  loader.conf[:banner] = "#{File.basename $0} [options] plugin < html"
+  loader.conf[:banner] = "#{File.basename $0} [options] plugin [opt1 opt2 ...] < html"
 }
 
 CliUtils.errx EX_USAGE, home.conf[:banner] unless BH.all_set?(ARGV[0])
@@ -15,7 +15,7 @@ CliUtils.errx EX_USAGE, home.conf[:banner] unless BH.all_set?(ARGV[0])
 # load plugin
 stream = [$stdin]
 begin
-  p = Plugin.new home.conf[:plugins_path], ARGV[0], {} do |loader|
+  p = Plugin.new home.conf[:plugins_path], ARGV[0],  ARGV[1..-1] do |loader|
     CliUtils.veputs 2, "'#{ARGV[0]}' plugin loaded from #{loader.origin}"
   end
   p.run_parser stream

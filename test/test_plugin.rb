@@ -86,12 +86,37 @@ class TestPlugin < MiniTest::Unit::TestCase
     e = assert_raises(PluginException) {
       Plugin.new @h.conf[:plugins_path], 'empty', []
     }
-    assert_match /uri must be an array of strings/, e.message
+    assert_match /forget about additional options/, e.message
 
+    e = assert_raises(PluginException) {
+      Plugin.new @h.conf[:plugins_path], 'empty', [1,2,3]
+    }
+    assert_match /uri must be an array of strings/, e.message
+    
     e = assert_raises(PluginException) {
       p = Plugin.new @h.conf[:plugins_path], 'garbage', []
     }
     assert_match /failed to parse/, e.message
+  end
+
+  def test_plugin_with_opt
+    streams = [StringIO.new(File.read(@h.root + Home::PLUGINS + 'inc.html')),
+               StringIO.new(File.read(@h.root + Home::PLUGINS + 'inc.html'))]
+    
+    e = assert_raises(PluginException) {
+      Plugin.new @h.conf[:plugins_path], 'inc', []
+    }
+    assert_match /forget about additional options/, e.message
+
+    rs = streams.sample
+    p1 = Plugin.new @h.conf[:plugins_path], 'inc', [1]
+    p1.run_parser [rs]
+    rs.rewind
+    
+    p2 = Plugin.new @h.conf[:plugins_path], 'inc', [1,2]
+    p2.run_parser streams
+
+    assert_operator p1.size, :<, p2.size
   end
 
   def test_PluginInfo_about
