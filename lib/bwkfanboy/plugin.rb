@@ -201,11 +201,18 @@ module Bwkfanboy
       p.uri.each {|idx| puts idx }
     end
 
-    def list path
+    def getList path
+      r = []
       path.each {|idx|
-        puts "#{idx}:"
-        Dir.glob("#{idx}/*.rb").each {|file| puts "\t"+File.basename(file, '.rb') }
+        dir = idx.to_s
+        e = { dir => [] }
+        Dir.glob("#{dir}/*.rb").each {|file|
+          e[dir] << File.basename(file, '.rb')
+        }
+        r << e
       }
+
+      r
     end
     
   end

@@ -1,0 +1,22 @@
+<html>
+  <head>
+	<title><%= meta::NAME %> :: Plugins List</title>
+  </head>
+  <body>
+	<h1>Plugins List</h1>
+
+	<% list.each do |idx| %>
+    <b><%= idx.keys.first + ':' %></b>
+	<ul>
+      <% idx[idx.keys.first].each {|file| %>
+      <li> <%= file %>
+	<% } %>
+	</ul>
+	<% end %>
+
+	<hr>
+	<p>
+	  <%= meta::NAME %> <%= meta::VERSION %> 
+	</p>
+  </body>
+</html>

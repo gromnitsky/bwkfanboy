@@ -50,3 +50,8 @@ end
 Rake::TestTask.new do |i|
   i.test_files = FileList['test/test_*.rb']
 end
+
+desc "Insert all 'requires' to speedup reload"
+task :shotgunreq do
+  sh "git grep 'require ' -- '*.rb' | awk -F: '{print $2}' | grep -v test | sort | uniq > shotgun.rb"
+end

@@ -1,49 +1,41 @@
 require 'logger'
-require 'securerandom'
+require 'sinatra/base'
 
 require_relative 'home'
+require_relative 'utils'
 
 module Bwkfanboy
-  class Server
-    PIDFILE = 'server.pid'
-    LOG = 'server.log'
-
-    def initialize home, logfile = nil
-      @home = home
-      @pidfile = @home.root + PIDFILE
-
-      pidfileMake
-      pidfileLock
-
-      @logfile = logfile || @home.logs + LOG
-      if @logfile == $stdout
-        $stdout.sync = false
-        @mylog = Logger.new $stdout
-      else
-        @mylog = Logger.new @logfile, 4, 1024*1024
-      end
-      @mylog.level = Logger::INFO
-    end
-
-    attr_reader :pidfile, :lock, :logfile
-    attr_accessor :mylog
-
-    # Return true on success, false on error.
-    def pidfileLock
-      @lock = true if File.new(@pidfile).flock(File::LOCK_EX|File::LOCK_NB)
-      @lock = false
-    end
-
+  class MyApp < Sinatra::Base
+    set :home, Home.new
+    set :public_folder, CliUtils::DIR_LIB_SRC.parent.parent + 'public'
+    set :views, CliUtils::DIR_LIB_SRC.parent.parent + 'views'
     
-    private
-    
-    def pidfileMake
-      File.open(@pidfile, File::CREAT|File::TRUNC|File::WRONLY) {|fd|
-        fd.write Process.pid
+    # List all plugins
+    get '/' do
+      list = PluginInfo.getList settings.home.conf[:plugins_path]
+      erb :list, locals: {
+        meta: Meta,
+        list: list
       }
-    rescue
-      fail "pidfile creation problem: #{$!}"
     end
 
+    get %r{/([a-zA-Z0-9_-]+)} do |plugin|
+      begin
+        r = Utils.atom(settings.home.conf[:plugins_path], plugin, ['foo']).to_s
+
+        # Search for <updated> tag and set Last-Modified header
+        if (m = r.match('<updated>(.+?)</updated>'))
+          headers 'Last-Modified' => DateTime.parse(m.to_s).httpdate
+        end
+        content_type 'application/atom+xml'
+        headers 'Content-Disposition' => "inline; filename=\"#{Meta::NAME}-#{plugin}.xml"
+
+        r
+      rescue PluginException
+        halt 500, $!.to_s
+      end
+    end
+    
+    run! if app_file == $0
   end
 end

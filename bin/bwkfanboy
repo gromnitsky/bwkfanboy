@@ -30,7 +30,13 @@ end
 
 case mode
 when :list
-  PluginInfo.list $home.conf[:plugins_path]
+  list = PluginInfo.getList $home.conf[:plugins_path]
+  list.each {|idx|
+    puts idx.keys.first + ':'
+    idx[idx.keys.first].each {|file|
+      puts "\t#{file}"
+    }
+  }
 
 when :info
   begin
@@ -44,7 +50,7 @@ when :template
 
 else
   begin
-    Utils.atom $home.conf[:plugins_path], ARGV[0], ARGV[1..-1]
+    puts Utils.atom($home.conf[:plugins_path], ARGV[0], ARGV[1..-1])
   rescue FetchException, PluginException, GeneratorException
     CliUtils.errx EX_DATAERR, $!.to_s
   end

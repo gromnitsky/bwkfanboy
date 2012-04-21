@@ -42,14 +42,16 @@ module Bwkfanboy
 
     # Do all the work of reading the plugin, parsing and generating the
     # atom feed.
+    # FIXME: ensure all streams are closed
     def atom pluginsPath, name, opt
       p = Plugin.new pluginsPath, name, opt
       streams = Fetch.openStreams p.uri
       p.run_parser(streams)
     
-      puts Generator.atom p.export
-      
+      r = Generator.atom p.export
       Fetch.closeStreams streams
+
+      r
     end
     
   end
