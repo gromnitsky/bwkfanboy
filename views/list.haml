@@ -1,0 +1,26 @@
+!!! 5
+%html
+  %head
+    %title #{meta::NAME} :: Plugins List
+    %link(rel="stylesheet" href="/style.css")
+
+  %body
+    #header
+      %h1 Plugins List
+
+    #list
+      - list.each do |idx|
+        %b #{idx.keys.first}:
+        %ul
+          - idx[idx.keys.first].each do |file|
+            %li
+              %span= file
+
+    #plugin
+      %h2 Plugin Info
+      #info
+        (Click on any link from the left.)
+
+    #footer
+      %hr/
+      %p #{meta::NAME} #{meta::VERSION}

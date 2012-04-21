@@ -1,4 +1,5 @@
 require 'logger'
+require 'haml'
 require 'sinatra/base'
 
 require_relative 'home'
@@ -13,7 +14,7 @@ module Bwkfanboy
     # List all plugins
     get '/' do
       list = PluginInfo.getList settings.home.conf[:plugins_path]
-      erb :list, locals: {
+      haml :list, locals: {
         meta: Meta,
         list: list
       }

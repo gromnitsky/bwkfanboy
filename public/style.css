@@ -1,0 +1,39 @@
+#header {
+/*	background: green;*/
+}
+
+#list {
+	float: left;
+	width: 49%;
+	padding: 0 0 0 1%;
+/*	background: #b0c4de;*/
+}
+
+#plugin {
+	float: right;
+	width: 49%;
+	padding: 0 0 1% 1%;
+/*	background: #ffe81a;*/
+}
+
+#footer {
+	clear: both;
+/*	background: orange;*/
+}
+
+#footer p {
+	float: right;
+	color: gray;
+}
+
+span:hover {
+	background: black;
+	color: white;
+	cursor: pointer;
+}
+
+hr {
+	height: 1px;
+	border-width: 0;
+	background-color: black;
+}
