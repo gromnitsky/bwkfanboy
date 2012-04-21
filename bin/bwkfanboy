@@ -40,10 +40,18 @@ when :list
 
 when :info
   begin
-    PluginInfo.about $home.conf[:plugins_path], ARGV[0], ARGV[1..-1]
+    r = PluginInfo.about $home.conf[:plugins_path], ARGV[0], ARGV[1..-1]
   rescue  PluginException
     CliUtils.errx EX_DATAERR, $!.to_s
   end
+
+  r.each {|key, val|
+    next if key == 'uri'
+    puts "%-9s : %s" % [key.upcase, val]
+  }
+  puts "URI       : #{r['uri'].size}\n\n"
+  r['uri'].each {|idx| puts idx }
+  
 
 when :template
   exit EX_CANTCREAT unless Utils.skeletonCreate $home.conf[:template], "#{$home.conf[:skeleton]}.rb"

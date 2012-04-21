@@ -1,6 +1,7 @@
 require 'logger'
 require 'haml'
 require 'sinatra/base'
+require 'json'
 
 require_relative 'home'
 require_relative 'utils'
@@ -20,6 +21,14 @@ module Bwkfanboy
       }
     end
 
+    get %r{/info/([a-zA-Z0-9_-]+)} do |plugin|
+      begin
+        PluginInfo.about(settings.home.conf[:plugins_path], plugin, ['foo', 'bar']).to_json
+      rescue PluginException
+        halt 500, $!.to_s
+      end
+    end
+    
     get %r{/([a-zA-Z0-9_-]+)} do |plugin|
       begin
         r = Utils.atom(settings.home.conf[:plugins_path], plugin, ['foo']).to_s
@@ -32,11 +41,11 @@ module Bwkfanboy
         headers 'Content-Disposition' => "inline; filename=\"#{Meta::NAME}-#{plugin}.xml"
 
         r
-      rescue PluginException
+      rescue FetchException, PluginException, GeneratorException
         halt 500, $!.to_s
       end
     end
-    
+   
     run! if app_file == $0
   end
 end

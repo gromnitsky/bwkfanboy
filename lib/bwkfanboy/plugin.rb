@@ -194,11 +194,11 @@ module Bwkfanboy
     
     def about path, name, opt
       p = Plugin.new path, name, opt
-      ['version', 'copyright', 'title'].each {|idx|
-        puts "%-9s : %s" % [idx.upcase, p.send(idx)]
+      r = {}
+      ['version', 'copyright', 'title', 'uri'].each {|idx|
+        r[idx] = p.send(idx)
       }
-      puts "URI       : #{p.uri.size}\n\n"
-      p.uri.each {|idx| puts idx }
+      r
     end
 
     def getList path
