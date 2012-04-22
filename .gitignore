@@ -1,2 +1,4 @@
 pkg
 html
+.bundler
+vendor

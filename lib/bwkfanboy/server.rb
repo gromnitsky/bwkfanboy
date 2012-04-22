@@ -5,12 +5,17 @@ require 'json'
 
 require_relative 'home'
 require_relative 'utils'
+require_relative '../../etc/sinatra'
 
 module Bwkfanboy
   class MyApp < Sinatra::Base
+    MySinatraConfig.read self
+    
     set :home, Home.new
     set :public_folder, CliUtils::DIR_LIB_SRC.parent.parent + 'public'
     set :views, CliUtils::DIR_LIB_SRC.parent.parent + 'views'
+
+    use Rack::Deflater
 
     def getOpts opts
       return [] unless opts
@@ -32,6 +37,10 @@ module Bwkfanboy
       opts = getOpts params['o']
       begin
         PluginInfo.about(settings.home.conf[:plugins_path], plugin, opts).to_json
+      rescue PluginInvalidName, PluginNoOptions
+        halt 400, $!.to_s
+      rescue PluginNotFound
+        halt 404, $!.to_s
       rescue PluginException
         halt 500, $!.to_s
       end
@@ -46,10 +55,14 @@ module Bwkfanboy
         if (m = r.match('<updated>(.+?)</updated>'))
           headers 'Last-Modified' => DateTime.parse(m.to_s).httpdate
         end
-        content_type 'application/atom+xml'
+        content_type 'application/atom+xml; charset=UTF-8'
         headers 'Content-Disposition' => "inline; filename=\"#{Meta::NAME}-#{plugin}.xml"
 
         r
+      rescue PluginInvalidName, PluginNoOptions
+        halt 400, $!.to_s
+      rescue PluginNotFound
+        halt 404, $!.to_s
       rescue FetchException, PluginException, GeneratorException
         halt 500, $!.to_s
       end

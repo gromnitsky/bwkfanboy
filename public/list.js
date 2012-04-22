@@ -19,7 +19,12 @@ List.prototype.mybind = function() {
 	})
 	$(List.INFO).ajaxStart(function() {
 		o.progressAnimation(true)
-	});
+	})
+	$(List.INFO).ajaxStop(function() {
+		$(List.OPTS).focus()
+	})
+
+	$(List.OPTS).focus()
 }
 
 // Select current plugin, sent GET request & fill List.INFO.
