@@ -53,12 +53,14 @@ class TestPlugin < MiniTest::Unit::TestCase
   end
 
   def test_load_failed
-    e = assert_raises(PluginException) { Plugin.new nil, 'BOGUS PLUGIN', [] }
+    e = assert_raises(PluginException) { Plugin.new nil, 'foo', [] }
     assert_match /invalid search path/, e.message
 
+    e = assert_raises(PluginInvalidName) { Plugin.new nil, 'BOGUS PLUGIN', [] }
+    assert_match /name doesn\'t match/, e.message
     
-    e = assert_raises(PluginException) {
-      Plugin.new @h.conf[:plugins_path], 'BOGUS PLUGIN', []
+    e = assert_raises(PluginNotFound) {
+      Plugin.new @h.conf[:plugins_path], 'BOGUS-PLUGIN', []
     }
     assert_match /not found/, e.message
 
@@ -83,7 +85,7 @@ class TestPlugin < MiniTest::Unit::TestCase
 
   def test_broken_plugins
     streams = [StringIO.new(File.read(@h.root + Home::PLUGINS + 'bwk.html'))]
-    e = assert_raises(PluginException) {
+    e = assert_raises(PluginNoOptions) {
       Plugin.new @h.conf[:plugins_path], 'empty', []
     }
     assert_match /forget about additional options/, e.message
@@ -103,7 +105,7 @@ class TestPlugin < MiniTest::Unit::TestCase
     streams = [StringIO.new(File.read(@h.root + Home::PLUGINS + 'inc.html')),
                StringIO.new(File.read(@h.root + Home::PLUGINS + 'inc.html'))]
     
-    e = assert_raises(PluginException) {
+    e = assert_raises(PluginNoOptions) {
       Plugin.new @h.conf[:plugins_path], 'inc', []
     }
     assert_match /forget about additional options/, e.message
@@ -120,13 +122,13 @@ class TestPlugin < MiniTest::Unit::TestCase
   end
 
   def test_PluginInfo_about
-    e = assert_raises(PluginException) { PluginInfo.about nil, nil, nil }
+    e = assert_raises(PluginException) { PluginInfo.about nil, 'foo', nil }
     assert_match /invalid search path/, e.message
 
-    e = assert_raises(PluginException) {
-      PluginInfo.about @h.conf[:plugins_path], nil, nil
+    e = assert_raises(PluginNotFound) {
+      PluginInfo.about @h.conf[:plugins_path], 'BOGUS-PLUGIN', nil
     }
-    assert_match /'' not found/, e.message
+    assert_match /not found/, e.message
 
     out, err = capture_io {
       PluginInfo.about @h.conf[:plugins_path], 'bwk', nil

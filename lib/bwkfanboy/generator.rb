@@ -3,7 +3,17 @@ require 'msgpack'
 
 module Bwkfanboy
 
-  class GeneratorException < Exception
+  # TODO: generate this class automatically via something like
+  # Utils.makeExceptClass 'GeneratorException', prefix: 'generator'
+  class GeneratorException < StandardError
+    def initialize msg
+      super msg
+    end
+
+    alias :orig_to_s :to_s
+    def to_s
+      "generator: #{orig_to_s}"
+    end
   end
   
   module Generator
@@ -19,7 +29,7 @@ module Bwkfanboy
 
     # [data]  a hash; see Plugin#pack for the exact format.
     def atom data
-      raise GeneratorException, 'generator: unpacked input is nil' unless data
+      raise GeneratorException, 'unpacked input is nil' unless data
       
       feed = RSS::Maker.make("atom") { |maker|
         maker.channel.id = data['channel']['id']
@@ -61,7 +71,7 @@ module Bwkfanboy
 
       feed
     rescue
-      raise GeneratorException, "generator: #{$!}"
+      raise GeneratorException, $!.to_s
     end
     
   end

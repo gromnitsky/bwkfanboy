@@ -40,7 +40,25 @@ module Bwkfanboy
     
   end
 
-  class PluginException < Exception
+  class PluginException < StandardError
+    def initialize msg
+      super msg
+    end
+
+    alias :orig_to_s :to_s
+    # looks clumsy
+    def to_s
+      "plugin: #{orig_to_s}"
+    end
+  end
+
+  class PluginInvalidName < PluginException
+  end
+
+  class PluginNotFound < PluginException
+  end
+
+  class PluginNoOptions < PluginException
   end
   
   # Requires defined 'parse(streams)' method in plugin.
@@ -50,6 +68,7 @@ module Bwkfanboy
     include Enumerable
 
     MAX_ENTRIES = 128
+    NAME_RE = /^[a-zA-Z0-9-]+$/
 
     # [path]    an array
     # [name]    plugin's name (without .rb extension)
@@ -57,6 +76,7 @@ module Bwkfanboy
     # [&block]  you can examine the Plugin object there
     def initialize path, name, opt, &block
       @path = path
+      raise PluginInvalidName, "name doesn't match #{NAME_RE}" unless validName?(name)
       @name = name
       @origin = nil # a path where plugin was found
       @syslib = File.dirname __FILE__
@@ -77,6 +97,10 @@ module Bwkfanboy
     attr_accessor :origin
     attr_accessor :uri, :enc, :version, :copyright, :title, :content_type
 
+    def validName? name
+      name =~ NAME_RE
+    end
+    
     def each &b
       @data.each &b
     end
@@ -86,7 +110,7 @@ module Bwkfanboy
       
       ['title', 'link', 'updated', 'author', 'content'].each {|idx|
         obj[idx] &&= BH.clean obj[idx]
-        raise PluginException, "plugin: empty '#{idx}' in the entry #{obj.inspect}" if obj[idx].size == 0
+        raise PluginException, "empty '#{idx}' in the entry #{obj.inspect}" if obj[idx].size == 0
       }
       
       @data << obj
@@ -137,7 +161,7 @@ module Bwkfanboy
     end
     
     def load
-      raise PluginException, 'plugin: invalid search path' unless @path && @path.respond_to?(:each)
+      raise PluginException, 'invalid search path' unless @path && @path.respond_to?(:each)
       
       p = nil
       @path.each {|idx|
@@ -149,23 +173,23 @@ module Bwkfanboy
         end
       }
 
-      raise PluginException, "plugin: '#{@name}' not found" unless p
+      raise PluginNotFound, "'#{@name}' not found" unless p
       
       begin
         instance_eval File.read(p)
       rescue Exception
-        raise PluginException, "plugin: '#{@name}' failed to parse: #{$!}"
+        raise PluginException, "'#{@name}' failed to parse: #{$!}"
       end
 
       unless BH.all_set?(uri)
-        raise PluginException, 'plugin: uri must be an array of strings' if @opt.size != 0
-        raise PluginException, 'plugin: don\'t we forget about additional options?'
+        raise PluginException, 'uri must be an array of strings' if @opt.size != 0
+        raise PluginNoOptions, 'don\'t we forget about additional options?'
       end
-      raise PluginException, 'plugin: enc is unset' unless BH.all_set?(enc)
-      raise PluginException, 'plugin: version must be an integer' unless BH.all_set?(version)
-      raise PluginException, 'plugin: copyright is unset' unless BH.all_set?(copyright)
-      raise PluginException, 'plugin: title is unset' unless BH.all_set?(title)
-      raise PluginException, 'plugin: content_type is unset' unless BH.all_set?(content_type)
+      raise PluginException, 'enc is unset' unless BH.all_set?(enc)
+      raise PluginException, 'version must be an integer' unless BH.all_set?(version)
+      raise PluginException, 'copyright is unset' unless BH.all_set?(copyright)
+      raise PluginException, 'title is unset' unless BH.all_set?(title)
+      raise PluginException, 'content_type is unset' unless BH.all_set?(content_type)
 
       # use this, for example, to print a message to user that loading
       # was fine
@@ -176,19 +200,19 @@ module Bwkfanboy
     def run_parser streams
       ok = streams ? true : false
       streams.each {|i| ok = false unless i.respond_to?(:eof) } if streams
-      raise PluginException, 'plugin: parser expects a valid array of IO objects' unless ok
+      raise PluginException, 'parser expects a valid array of IO objects' unless ok
 
       begin
         parse streams
       rescue Exception
-        raise PluginException, "plugin: '#{@name}' failed to parse: #{$!}"
+        raise PluginException, "'#{@name}' failed to parse: #{$!}"
       end
 
       check
     end
       
     def check
-      raise PluginException, "plugin: it ain't grab anything" if @data.size == 0
+      raise PluginException, "it ain't grab anything" if @data.size == 0
     end
 
   end
@@ -199,7 +223,7 @@ module Bwkfanboy
     def about path, name, opt
       p = Plugin.new path, name, opt
       r = {}
-      ['version', 'copyright', 'title', 'uri'].each {|idx|
+      ['title', 'version', 'copyright', 'uri'].each {|idx|
         r[idx] = p.send(idx)
       }
       r

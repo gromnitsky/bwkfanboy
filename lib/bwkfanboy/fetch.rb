@@ -2,7 +2,7 @@ require 'open-uri'
 
 module Bwkfanboy
 
-  class FetchException < Exception
+  class FetchException < StandardError
   end
   
   module Fetch
