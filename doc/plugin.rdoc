@@ -1,0 +1,140 @@
+= How to Write a \Plugin
+
+First of all, look at examples included with bwkfanboy.
+
+Basically, all you need is to write 1 method (function) called +parse+
+and set several instance variables.
+
+== Skeleton
+
+Here is a simple plugin skeleton:
+
+  @uri << 'http://example.org/news'
+  @enc = 'UTF-8'
+  @version = 1
+  @copyright = '(c) 2012 John Doe'
+  @title = "News from example.org"
+  @content_type = 'html'
+
+  def parse streams
+    streams.each do |io|
+      doc = Nokogiri::HTML io, nil, @enc
+      doc.xpath("XPATH QUERY").each {|idx|
+        t = idx.xpath("XPATH QUERY").text
+        l = idx.xpath("XPATH QUERY").text
+        u = BH.date idx.xpath("XPATH QUERY").text
+        a = idx.xpath("XPATH QUERY").text
+        c = idx.xpath("XPATH QUERY").text
+
+        self << { 'title' => t, 'link' => l, 'updated' => u,
+          'author' => a, 'content' => c }
+      }
+    end
+  end
+
+
+You can get the skeleton in the current directory by typing:
+
+  % bwkfanboy -s myplugin
+
+As you see, we are using Nokogiri for HTML parsing. You are not required
+to use it too--choose the parser whatever you like. Nokogiri is nice,
+because it's able to read a broken HTML and search thought it via
+XPath. If you would like to use, for example, REXML, beware that it
+loves only strict XML--you may need to clean the HTML with an external
+utility such as Tide.
+
+Bwkfanboy loads a plugin from 1 file as a valid Ruby code (via
+<tt>instance_eval</tt>). This means that the plugin can contain *any*
+Ruby code, but doesn't mean that it should.
+
+=== \Meta
+
+Several instance variable are required to be set.
+
+* <tt>@uri</tt>--is a an <b>array of strings</b> <tt>http(s)://</tt> or
+  <tt>ftp://</tt> URL or just a path to a file on your local machine, as
+  <tt>/home/bob/huzza.html</tt>. This is sources that bwkfanboy will use
+  to create 1 Atom feed.
+
+* <tt>@enc</tt>--an encoding for *all* URIs in @uri.
+
+* <tt>@version</tt>--a version of a plugin. Any unsigned integer.
+
+* <tt>@copyright</tt>--some boring string.
+
+* <tt>@title</tt>--a short description of the future feed.
+
+* <tt>@content_type</tt>--one of +xhtml+, +html+ or +text+ values. This
+  is very important veriable because it says what format entries would
+  have in the feed. Usually it's safe to use +html+.
+
+=== parse
+
++parse+ method uses an array of IO objects. The contents of them is the
+raw HTML you want to parse. The general idea:
+
+* Atom feed must contain at least 1 entry, so look in the HTML for some
+  crap that you will break into 5 peaces:
+
+  - a title of the entry
+  - a link for it
+  - a date for the entry
+  - who is the author of the entry and
+  - its contents.
+
+* After you scan and grab 1 entry, create a hash and add it to
+  _self_ as it was in the skeleton:
+
+    self << { 'title' => t, 'link' => l, 'updated' => u,
+              'author' => a, 'content' => c }
+
+  Here variables _t_, _l_, _u_, _a_ and _c_ contains the actual
+  value of 5 peaces for the entry. Names of the keys in the hash are
+  important of course--don't invent your own.
+
+* Probably there would be more crap in the HTML that you can use to
+  construct another entry. Keep parsing and adding entries.
+
+* While you're scanning, use the <tt>BH.date</tt> helper method, which
+  parses a string and return a date in ISO8601 format.
+
+
+=== Options
+
+Plugins can have _options_ and a user should provide them to the plugin
+in the real-time. For example, say you're scraping a site where many
+users are wasting their time. If you want to watch for several of them
+it is silly to write a new plugin every time for a new
+participant. Instead, you can write 1 plugin which have an _option_ to
+take a parameter (a user name, in this case).
+
+Options (if any) are always accessible via <tt>@opt</tt> valiable which is an
+array of strings.
+
+One can play the really interesting trick with <tt>@uri</tt>. It is
+possible to make it dynamic, for example:
+
+  @opt.each {|i| @uri << 'http://www.inc.com/author/' + i }
+
+Then, if a user will provide 1 option (say 'jason-fried')--it will
+appear in the final URI as follows:
+
+  http://www.inc.com/author/jason-fried
+
+
+== How to test all this
+
+To test how nice your plugin works, save the html page to the file
+and type:
+
+  % bwkfanboy_parse -v plugin < saved_page.html
+
+For option-enabled plugins, supply additional parameters for them after
+the plugin path:
+
+  % bwkfanboy_parse -v plugin opt1 opt2 < saved_page.html
+
+<tt>bwkfanboy_parse</tt> return 0 if no errors occurred or >= 1 if you
+have errors in your plugin code. N.B.: the output from
+<tt>bwkparser_parse</tt> *must* always be in UTF-8.

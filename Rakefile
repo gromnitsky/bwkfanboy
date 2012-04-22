@@ -16,7 +16,7 @@ require_relative 'test/rake_git'
 spec = Gem::Specification.new {|i|
   i.name = Meta::NAME
   i.version = `bin/#{i.name} -V`
-  i.summary = 'TO DO: fill this variable'
+  i.summary = 'A converter from a raw HTML to an Atom feed. You can use it to watch sites that do not provide its own feed'
   i.description = i.summary + '.'
   i.author = Meta::AUTHOR
   i.email = Meta::EMAIL
@@ -30,7 +30,7 @@ spec = Gem::Specification.new {|i|
   
   i.test_files = FileList['test/test_*.rb']
   
-  i.rdoc_options << '-m' << 'doc/README.rdoc'
+  i.rdoc_options << '-m' << 'README.rdoc'
   i.extra_rdoc_files = FileList['doc/*']
 
   i.add_dependency('open4', '>= 1.1.0')
@@ -42,8 +42,8 @@ Gem::PackageTask.new(spec).define
 task default: [:repackage]
 
 RDoc::Task.new('html') do |i|
-  i.main = 'doc/README.rdoc'
-  i.rdoc_files = FileList['doc/*', 'lib/**/*.rb']
+  i.main = 'README.rdoc'
+  i.rdoc_files = FileList['README.rdoc', 'doc/*', 'lib/**/*.rb']
 #  i.rdoc_files.exclude("lib/**/some-nasty-staff")
 end
 

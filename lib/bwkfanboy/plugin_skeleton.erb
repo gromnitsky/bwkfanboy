@@ -2,7 +2,7 @@
 # plugins work please read doc/plugins.rdoc file from <%= Meta::NAME %>'s
 # distribution.
 
-@uri = 'http://example.org/news'
+@uri << 'http://example.org/news'
 @enc = 'UTF-8'
 @version = 1
 @copyright = '(c) <%= DateTime.now.year %> <%= Etc.getpwuid(Process.euid)[:gecos] %>'

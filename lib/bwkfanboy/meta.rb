@@ -1,4 +1,3 @@
-# :include: ../../README.rdoc
 module Bwkfanboy
   module Meta # :nodoc:
     NAME = 'bwkfanboy'

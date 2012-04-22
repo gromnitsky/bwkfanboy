@@ -1,56 +1,104 @@
-=Name
+= About
 
-bwkfanboy--[TODO: write a summary here.]
+A live example: http://bwkfanboy.herokuapp.com
 
+bwkfanboy is a converter from a raw HTML to an Atom feed. You can use it
+to watch sites that do not provide its own feed.
 
-==Synopsis
+The converter is not a magick tool: you'll need to write a plugin (in
+Ruby) for an each site you want to watch. bwkfanboy gives guidelines and
+a general assistance.
 
- bwkfanboy [options]
+<b> Version 2.0.0 was rewritten form scratch. Plugins from previous
+versions will not work.</b> See http://github.com/gromnitsky/bwkfanboy_old
+repo for old versions.
 
+= Included Plugins
 
-==Description
+  NAME                 VER DESCRIPTION
 
-The bwkfanboy utility [TODO: write a description here.]
-
-The options are as follows:
-
---config-dirs::             List all possible locations for the
-                            configuration file. The first found wins.
-
---config NAME::             The name of the configuration file. If
-                            it contains <tt>/</tt> in it, the list from
-                            <tt>--config-dirs</tt> is ignored.
-
--V, --version::             Show version and exit.
-
--v::                        Be more verbose. You can supply it several
-                            times, viz. <tt>-vv</tt> dumps even more
-                            debug info.
-
---foobar NAME::             Huh?
-
-==Configuration
-
-bwkfanboy looks for its configuration at 3 places at start up.
-
-1. At <tt>BWKFANBOY_CONF</tt> env variable.
-   (Its format is exactly similar to CL options.)
-
-2. At the configuration file. Its default name is
-   <tt>bwkfanboy.yaml</tt> and it can be stored in several
-   system directories which are observable by <tt>--config--dirs</tt> CL
-   option.
-
-3. At command line.
-
-Higher number levels overrides the values from lower number levels.
-
-The configuration file must be in YAML format. Look into <tt>`gem env
-gemdir`/gems/bwkfanboy-x.y.z/etc/</tt> directory for samples.
+  bwk                    2 Brian Kernighan's articles from Daily Princetonian
+  freebsd-ports-update   3 News from FreeBSD ports
+  inc                    1 Articles (per-user) from inc.com
+  econlib                1 Latest articles from econlib.org
 
 
-==Examples
+= Installation
 
- % ri Bwkfanboy
- % bwkfanboy --config-dirs
- % bwkfanboy -V
+Install bundler:
+
+  # gem install bundler
+
+Install all dependencies. You have 2 choices:
+
+1. Usual via
+
+     # bundle install
+
+2. Or only for this program
+
+     % bundle install --path vendor/bundle
+
+   You'll have to prefix other commands with 'bundle exec' though.
+
+Run application:
+
+  % rackup -E production
+
+Point a browser to http://127.0.0.1:9292
+
+  
+= Architecture
+
+== Plugins
+
+Plugins can be in system
+
+  `gem env gemdir`/gems/bwkfanboy-x.y.z/plugins
+
+or user's home
+
+  ~/.bwkfanboy/plugins
+
+directory.
+
+== Pipeline
+
+The program consists of 3 parts:
+
+0. *bwkfanboy* script that takes 1 parameter: the name of a file in
+   plugin directories (without the .rb suffix). So, for example to get
+   an atom feed from dailyprincetonian.com, you type:
+
+     % bwkfanboy bwk
+
+   and it will load
+   <tt>/usr/local/lib/ruby/gems/1.9/gems/bwkfanboy-2.0.0/plugins/bwk.rb</tt>
+   file on my FreeBSD machine, fetch and parse the html from
+   dailyprincetonian.com and generate the required feed, dumping it to
+   stdout.
+
+   The script is just a convenient wrapper for 2 separate
+   utils below. (Although it doesn't executes them, but uses their internal
+   api.)
+
+1. *bwkfanboy_parse*
+
+   Takes 1 parameter: a plugin name.
+
+   This util reads stdin, expecting it to be a html, parses it and
+   dumps the result to stdout as MessagePack object in UTF-8.
+
+2. *bwkfanboy_generate*
+
+   Reads stdin expecting it to be a proper MessagePack object.
+
+   The result will be an Atom feed dumped to stdout in UTF-8.
+
+So, without the wrapper all this together looks like:
+
+  % curl http://example.org | bwkfanboy_parse myplugin | bwkfanboy_generate
+
+== HTTP
+
+bwkfanboy includes a small sinatra app. See the installation phase.
