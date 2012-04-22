@@ -49,7 +49,7 @@ module Bwkfanboy
   class Plugin
     include Enumerable
 
-    MAX_ENTRIES = 256
+    MAX_ENTRIES = 128
 
     # [path]    an array
     # [name]    plugin's name (without .rb extension)
@@ -82,7 +82,7 @@ module Bwkfanboy
     end
 
     def << obj
-      return @data if @data.size >= MAX_ENTRIES
+      return @data if full?
       
       ['title', 'link', 'updated', 'author', 'content'].each {|idx|
         obj[idx] &&= BH.clean obj[idx]
@@ -92,6 +92,10 @@ module Bwkfanboy
       @data << obj
     end
 
+    def full?
+      @data.size >= MAX_ENTRIES
+    end
+    
     def [] index
       @data[index]
     end

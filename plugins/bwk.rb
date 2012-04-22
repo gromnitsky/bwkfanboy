@@ -2,6 +2,7 @@
 @copyright = "See bwkfanboy's LICENSE file"
 @title = "Brian Kernighan's articles from Daily Princetonian"
 @content_type = 'html'
+@version = 2
 
 # [streams]  an array of IO streamss
 def parse streams
