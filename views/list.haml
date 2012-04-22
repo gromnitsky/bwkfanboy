@@ -30,4 +30,6 @@
           
     #footer
       %hr/
-      %p #{meta::NAME} #{meta::VERSION}
+      .footer
+        %a{href: url("#{meta::HOMEPAGE}")} #{meta::NAME}
+        \#{meta::VERSION}

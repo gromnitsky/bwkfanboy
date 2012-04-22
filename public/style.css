@@ -21,9 +21,9 @@
 /*	background: orange;*/
 }
 
-#footer p {
+.footer {
 	float: right;
-	color: gray;
+/*	color: gray;*/
 }
 
 hr {
@@ -47,14 +47,6 @@ span:hover {
 	background: white;
 	color: black;
 }
-
-/* table { */
-/* 	table-layout: fixed; */
-/* } */
-
-/* td { */
-/* 	word-wrap: break-word; */
-/* } */
 
 table ul {
 	padding: 0 0 0 1em;

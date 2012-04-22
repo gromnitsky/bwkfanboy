@@ -17,6 +17,9 @@ List.prototype.mybind = function() {
 		o.getInfo($('li > span[class="pluginSelected"]'))
 		return false;
 	})
+	$(List.INFO).ajaxStart(function() {
+		o.progressAnimation(true)
+	});
 }
 
 // Select current plugin, sent GET request & fill List.INFO.
@@ -47,6 +50,15 @@ List.prototype.selectCurrent = function(e) {
 			$(this).addClass('pluginUnselected')
 		}
 	})
+}
+
+List.prototype.progressAnimation = function(enable) {
+	if (enable) {
+		t = '<img src="/loading.gif" alt="Loading..." />'
+		$(List.INFO).html(t)
+	} else {
+		$(List.INFO + ' img').remove()
+	}
 }
 
 List.prototype.drawPluginInfo = function(plugin, json) {

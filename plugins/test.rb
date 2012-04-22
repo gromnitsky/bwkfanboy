@@ -1,7 +1,7 @@
 @opt.each { @uri << "#{@syslib}/../../test/example/02/plugins/inc.html" }
-@version = 1
-@copyright = 'See bwkfanboy\'s LICENSE file'
-@title = "Articles (per-user) from inc.com"
+@version = 0
+@copyright = 'takoe'
+@title = "Test plugin that requires additional options"
 @content_type = 'html'
 
 def parse streams
