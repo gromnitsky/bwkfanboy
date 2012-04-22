@@ -5,11 +5,41 @@
 function List() {}
 
 List.INFO = '#info'
+List.FORM = 'form'
+List.OPTS = 'form input[name="opts"]'
+
+List.prototype.mybind = function() {
+    var o = this
+    $('li > span').click(function() {
+		o.getInfo(this)
+	})
+	$(List.FORM).submit(function() {
+		o.getInfo($('li > span[class="pluginSelected"]'))
+		return false;
+	})
+}
+
+// Select current plugin, sent GET request & fill List.INFO.
+List.prototype.getInfo = function(plugin) {
+	if (!plugin || plugin.length == 0) return
+	
+	this.selectCurrent(plugin)
+	var name =  $(plugin).text()
+	var url = '/info' + this.atom(name)
+
+	o = this
+	r = $.getJSON(url, function(json) {
+		o.drawPluginInfo(name, json)
+	})
+	    .error(function() {
+			$(List.INFO).text('Error: ' + r.responseText)
+        })
+
+}
 
 List.prototype.selectCurrent = function(e) {
     $('li > span').each(function(idx) {
-		if (this == e) {
-//			console.log(idx + ' ' + $(this).text())
+		if ($(e).text() == $(this).text()) {
 			$(this).addClass('pluginSelected')
 			$(this).removeClass('pluginUnselected')
 		} else {
@@ -21,8 +51,10 @@ List.prototype.selectCurrent = function(e) {
 
 List.prototype.drawPluginInfo = function(plugin, json) {
 	$(List.INFO).html('')
+
+	var opts = this.getOpts()
+	var atom = '/' + plugin + (opts ? '?o='+opts : '')
 	
-	var atom = '/' + plugin
 	var t = '<table border="1" cellpadding="3">'
 	t += '<tr><td>Atom</td><td>' + '<a href="'+atom+'">RSS reader link</a>' + '</td></tr>'
 	t += '<tr><td>Title</td><td>' + json["title"] + '</td></tr>'
@@ -41,29 +73,16 @@ List.prototype.drawPluginInfo = function(plugin, json) {
 	$(List.INFO).html(t)
 }
 
-// Select current plugin, sent GET request & fill List.INFO.
-List.prototype.getInfo = function(plugin) {
-	this.selectCurrent(plugin)
-	var name =  $(plugin).text()
-	var url = '/info/' + name
-
-	o = this
-	r = $.getJSON(url, function(json) {
-		o.drawPluginInfo(name, json)
-	})
-	    .error(function() {
-//			console.log(r)
-			$(List.INFO).text('Error: ' + r.responseText)
-        })
-
+List.prototype.getOpts = function() {
+	var opts = $(List.OPTS).val()
+	if (!opts) return ''
+	return opts.replace(/\s+/g, ' ').trim()
 }
 
-
-List.prototype.mybind = function() {
-    var o = this
-    $('li > span').click(function() {
-		o.getInfo(this)
-	})
+// Return a proper URL to a atom feed of [plugin]
+List.prototype.atom = function(plugin) {
+	var opts = this.getOpts()
+	return '/' + plugin + (opts ? '?o='+opts : '')
 }
 
 
