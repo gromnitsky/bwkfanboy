@@ -27,7 +27,7 @@ class TestServer < MiniTest::Unit::TestCase
     get '/test?o=foo&o=bar'
     assert last_response.ok?
     assert_operator 100, :<, last_response.header['Content-Length'].to_i
-    assert_equal 'application/atom+xml', last_response.header['Content-Type']
+    assert_equal 'application/atom+xml; charset=UTF-8', last_response.header['Content-Type']
   end
 
 end
