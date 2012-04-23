@@ -26,7 +26,7 @@ Plugins from & for previous versions (0.x & 1.x) WILL NOT WORK.
 See also doc/NEWS.rdoc file.
   MESSAGE
 
-  gem.add_dependency "open4", "~> 1.1.0"
+  gem.add_dependency "open4", "~> 1.3.0"
   gem.add_dependency "msgpack", "~> 0.4.6"
   gem.add_dependency "rake", "~> 0.9.2.2"
   gem.add_dependency "nokogiri", "~> 1.5.2"
