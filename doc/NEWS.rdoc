@@ -1,5 +1,34 @@
-=== 0.0.1
+=== 2.0.0
 
-Tue, 17 Apr 2012 14:10:03 +0300
+Mon Apr 23 07:28:52 EEST 2012
 
-- Created a first skeleton.
+Changes from 1.4.1:
+
+* CGI script & webrick-based server are gone. Use rackup to start a
+  Sinatra app instead. HTTP API is completely new, which means you'll
+  need to change URLs in your RSS reader.
+
+* bwkfanboy_server is gone.
+  
+* Plugin interface API completely changed to work nicely with the
+  long-running Sinatra app.
+
+  This means you'll need to update all your personal plugins. I am very
+  sorry.
+
+* bwkfanboy_fetch CL utility is gone. If you still need it, use curl
+  instead.
+
+* bwkfanboy:
+
+  - '-t' CL option is '-s' now;
+
+  - output in '-i' is different;
+
+  - '-p' is '--plugins-path'.
+
+* bwkfanboy_parse emits MessagePack instead of JSON. (Who cares?)
+
+* Log files in /tmp are gone. If you need logs from the Sinatra app,
+  comment in etc/sinatra.rb a monkey patch for rack.
+

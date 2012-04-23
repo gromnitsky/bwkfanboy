@@ -10,7 +10,7 @@ module Bwkfanboy
     # FIXME: clean unsafe html for 'html' content_type
     def clean t
       return '' unless t
-      t.gsub(/\s+/, ' ').strip
+      t
     end
 
     # Tries to parse _s_ string as a date.
