@@ -33,3 +33,6 @@
       .footer
         %a{href: url("#{meta::HOMEPAGE}")} #{meta::NAME}
         \#{meta::VERSION}
+        - if ENV["COMMIT_HASH"]
+          %br/
+          Commit hash: #{ENV["COMMIT_HASH"]}

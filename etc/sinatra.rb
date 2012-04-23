@@ -15,6 +15,8 @@ module Bwkfanboy
     
     def self.read o
       o.configure do
+        # heroku logs
+        $stdout.sync = true
       end
   
       o.configure :production, :development do
